@@ -1,6 +1,7 @@
 
 import plotly.graph_objects as go
 import plotly.io as pio
+import plotly.express as px
 import pandas as pd
 import answer_sequence_vis as vis_tools
 
@@ -107,13 +108,75 @@ def filter_submissions_less_than_seconds(
     multiple_students_df = multiple_students_df.sort_values(by=['student_id', 'timestamp'])
     
     # Calculate time difference between consecutive submissions
-    multiple_students_df['time_diff'] = multiple_students_df.groupby('student_id')['timestamp'].diff().dt.total_seconds()
+    multiple_students_df['interval_sec'] = multiple_students_df.groupby('student_id')['timestamp'].diff().dt.total_seconds()
     
     # Filter out rows where time difference is less than `seconds`
-    filtered_df = multiple_students_df[multiple_students_df['time_diff'].fillna(seconds + 1) >= seconds]
+    filtered_df = multiple_students_df[multiple_students_df['interval_sec'].fillna(seconds + 1) >= seconds]
     
-    return filtered_df.drop(columns=['time_diff'])
+    return filtered_df.drop(columns=['interval_sec'])
 
+def filter_submissions_by_answer_length(
+    multiple_students_df: pd.DataFrame, 
+    min_length: int = 1
+) -> pd.DataFrame:
+    """
+    Filter out submissions with answer length less than 'min_length'.
+    
+    parameters:
+    - multiple_students_df: DataFrame with 'answer' column.
+    - min_length: Minimum length of the answer.
+    
+    returns:
+    - Filtered DataFrame.
+    """
+    return multiple_students_df[multiple_students_df['answer'].str.len() >= min_length].copy()
+
+def plotly_one_students_submission_interval_counts(
+    one_students_df: pd.DataFrame,
+    bin_size: int = 30,
+) -> str:
+    """
+    Plot one student the intervals of sumbissions count
+
+    parameters:
+    - one_students_df: DataFrame with 'task_id' and 'timestamp' columns.
+    - bin_size: Size of the bins for the histogram (default is 30 seconds).
+    
+    returns:
+    - HTML string for the Plotly chart.
+    """
+
+    one_students_df = one_students_df.sort_values("timestamp").copy()
+    one_students_df["interval_sec"] = one_students_df["timestamp"].diff().dt.total_seconds()
+
+    valid_intervals = one_students_df["interval_sec"].dropna()
+
+    if valid_intervals.empty:
+        return "<p>No intervals above threshold to display.</p>"
+
+    fig = px.histogram(
+        x=valid_intervals,
+        # nbins=int((valid_intervals.max() - valid_intervals.min()) // bin_size) + 1,
+        title="Submission Interval Distribution",
+        labels={"x": "Time Interval (seconds)", "y": "Count"}
+    )
+
+    fig.update_layout(
+        xaxis_title=f"Time Between Submissions (bin size: {bin_size} seconds)",
+        yaxis_title="Number of Occurrences",
+        bargap=0.1,
+        template="plotly_white"
+    )
+
+    fig.update_traces(
+        xbins=dict(
+            start=valid_intervals.min(),
+            end=valid_intervals.max(),
+            size=bin_size
+        )
+    )
+
+    return pio.to_html(fig, full_html=False, include_plotlyjs='cdn')
 
 
 if __name__ == "__main__":
@@ -130,12 +193,14 @@ if __name__ == "__main__":
     stu3_df = vis_tools.get_one_student_submissions(all_submissions_df, "6444fad4ad42f277da7e8c45468d271d12426bbbbf8ff9fa9c28abf16d2cef19")
 
 
-    filtered_stus = filter_submissions_less_than_seconds(pd.concat([stu1_df, stu2_df, stu3_df]), 15)
+    # filtered_stus = filter_submissions_less_than_seconds(pd.concat([stu1_df, stu2_df, stu3_df]), 15)
 
 
-    plot_html = plot_multiple_students_submission_sequence_plotly(filtered_stus, task_ids)
+    # plot_html = plot_multiple_students_submission_sequence_plotly(filtered_stus, task_ids)
 
-    with open("test/filter_15_sec_plot.html", "w", encoding="utf-8") as f:
+    plot_html = plotly_one_students_submission_interval_counts(stu3_df)
+
+    with open("test/time_windows_between_one_student_plot.html", "w", encoding="utf-8") as f:
         f.write(plot_html)
 
     print("Analysis complete.")
