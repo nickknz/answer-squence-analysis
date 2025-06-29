@@ -90,9 +90,36 @@ def convert_task_id_to_answerbook_format(task_id: str) -> str:
     t_num = t[1:]
     return f"{q_num}{p_letter}{s2roman}{t_num}"
 
+def filter_submissions_less_than_seconds(
+    multiple_students_df: pd.DataFrame, 
+    seconds: int = 15
+) -> pd.DataFrame:
+    """
+    Filter out submissions that are less than `seconds` apart.
+    
+    parameters:
+    - multiple_students_df: DataFrame with 'timestamp' column.
+    - seconds: Minimum time difference in seconds.
+    
+    returns:
+    - Filtered DataFrame.
+    """
+    multiple_students_df = multiple_students_df.sort_values(by=['student_id', 'timestamp'])
+    
+    # Calculate time difference between consecutive submissions
+    multiple_students_df['time_diff'] = multiple_students_df.groupby('student_id')['timestamp'].diff().dt.total_seconds()
+    
+    # Filter out rows where time difference is less than `seconds`
+    filtered_df = multiple_students_df[multiple_students_df['time_diff'].fillna(seconds + 1) >= seconds]
+    
+    return filtered_df.drop(columns=['time_diff'])
+
 
 
 if __name__ == "__main__":
+
+    # pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_rows', None)
 
     all_submissions_df = pd.read_parquet("data/all_submissions.parquet")
 
@@ -102,9 +129,13 @@ if __name__ == "__main__":
     stu2_df = vis_tools.get_one_student_submissions(all_submissions_df, "aba64fa34e052d9f2c5473f26136afa4c053f049191f40ea7e0d56708274d9a8")
     stu3_df = vis_tools.get_one_student_submissions(all_submissions_df, "6444fad4ad42f277da7e8c45468d271d12426bbbbf8ff9fa9c28abf16d2cef19")
 
-    plot_html = plot_multiple_students_submission_sequence_plotly(pd.concat([stu1_df, stu2_df, stu3_df]), task_ids)
 
-    with open("test/test_plot.html", "w", encoding="utf-8") as f:
+    filtered_stus = filter_submissions_less_than_seconds(pd.concat([stu1_df, stu2_df, stu3_df]), 15)
+
+
+    plot_html = plot_multiple_students_submission_sequence_plotly(filtered_stus, task_ids)
+
+    with open("test/filter_15_sec_plot.html", "w", encoding="utf-8") as f:
         f.write(plot_html)
 
     print("Analysis complete.")
