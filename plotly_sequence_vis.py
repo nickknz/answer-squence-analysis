@@ -156,7 +156,6 @@ def plotly_one_students_submission_interval_counts(
 
     fig = px.histogram(
         x=valid_intervals,
-        # nbins=int((valid_intervals.max() - valid_intervals.min()) // bin_size) + 1,
         title="Submission Interval Distribution",
         labels={"x": "Time Interval (seconds)", "y": "Count"}
     )
@@ -178,6 +177,31 @@ def plotly_one_students_submission_interval_counts(
 
     return pio.to_html(fig, full_html=False, include_plotlyjs='cdn')
 
+def count_submissions_in_window(
+    df: pd.DataFrame,
+    start_time: pd.Timestamp,
+    end_time: pd.Timestamp,
+    selected_task_ids: list
+) -> int:
+    """
+    Count the number of submissions in a given time window for selected tasks.
+    
+    parameters:
+    - df: DataFrame with 'timestamp' and 'task_id' columns.
+    - start_time: Start of the time window.
+    - end_time: End of the time window.
+    - selected_task_ids: List of task IDs to filter by.
+    
+    returns:
+    - Count of submissions in the specified time window for the selected tasks.
+    """
+    mask = (
+        (df['timestamp'] >= start_time) &
+        (df['timestamp'] <= end_time) &
+        (df['task_id'].isin(selected_task_ids))
+    )
+    return df[mask].shape[0]
+
 
 if __name__ == "__main__":
 
@@ -192,15 +216,21 @@ if __name__ == "__main__":
     stu2_df = vis_tools.get_one_student_submissions(all_submissions_df, "aba64fa34e052d9f2c5473f26136afa4c053f049191f40ea7e0d56708274d9a8")
     stu3_df = vis_tools.get_one_student_submissions(all_submissions_df, "6444fad4ad42f277da7e8c45468d271d12426bbbbf8ff9fa9c28abf16d2cef19")
 
+    # print(count_submissions_in_window(
+    #     stu1_df,
+    #     pd.Timestamp("2022-05-03 09:03:19+00:00"),
+    #     pd.Timestamp("2022-05-03 10:52:47+00:00"),
+    #     ['q1_p1_s1_t5']
+    # ))
 
     # filtered_stus = filter_submissions_less_than_seconds(pd.concat([stu1_df, stu2_df, stu3_df]), 15)
 
 
     # plot_html = plot_multiple_students_submission_sequence_plotly(filtered_stus, task_ids)
 
-    plot_html = plotly_one_students_submission_interval_counts(stu3_df)
+    # plot_html = plotly_one_students_submission_interval_counts(stu3_df)
 
-    with open("test/time_windows_between_one_student_plot.html", "w", encoding="utf-8") as f:
-        f.write(plot_html)
+    # with open("test/time_windows_between_one_student_plot.html", "w", encoding="utf-8") as f:
+    #     f.write(plot_html)
 
     print("Analysis complete.")
