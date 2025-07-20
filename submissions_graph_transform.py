@@ -60,7 +60,6 @@ def submissions_to_graph(submissions_df: pd.DataFrame, student_id_col: str = 'st
     return G, student_paths
 
 if __name__ == "__main__":
-    # Example usage
     df = pd.read_parquet("data/all_submissions.parquet")
     G, student_paths = submissions_to_graph(df)
     print(f"Graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
