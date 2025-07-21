@@ -20,7 +20,6 @@ if __name__ == "__main__":
 
     X = np.array([path_to_transition_vector(path) for path in student_paths.values()])
 
-    # 聚类
     kmeans = KMeans(n_clusters=3, random_state=42)
     labels = kmeans.fit_predict(X)
     print(labels)  
