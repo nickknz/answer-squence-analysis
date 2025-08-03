@@ -35,6 +35,23 @@ def submissions_to_graph_for_all_students(submissions_df: pd.DataFrame, student_
 
     return G, student_paths
 
+def plot_all_students_graph(
+    graph: nx.MultiDiGraph,
+    title: str = "Submission Paths for All Students",
+    figsize: tuple = (12, 8)):
+    """
+    Plot the submission paths of all students as a directed graph.
+    Parameters:
+    - graph: The directed graph containing the students' submission paths.
+    - title: Title of the plot.
+    - figsize: Size of the figure for the plot.
+    """
+    plt.figure(figsize=figsize)
+    pos = nx.spring_layout(graph, seed=42)  # Use spring layout for better visualization
+    nx.draw(graph, pos, with_labels=True, node_size=500, font_size=8, arrows=True)
+    plt.title(title)
+    plt.show()  
+
 def plot_one_student_graph(
     student_id: str,
     graph: nx.MultiDiGraph,):
@@ -103,18 +120,20 @@ def print_edges_for_student(G, student_id):
 
 if __name__ == "__main__":
     df = pd.read_parquet("data/all_submissions.parquet")
-    # G, student_paths = submissions_to_graph_for_all_students(df)
-    students_paths = generate_students_paths(df)
+    G, student_paths = submissions_to_graph_for_all_students(df)
+    # students_paths = generate_students_paths(df)
 
-    # create a directed graph for all students' submission paths
-    student_graphs = {}
-    for student_id, path in students_paths.items():
-        student_graphs[student_id] = generate_one_student_graph(student_id, path)
+    # # create a directed graph for all students' submission paths
+    # student_graphs = {}
+    # for student_id, path in students_paths.items():
+    #     student_graphs[student_id] = generate_one_student_graph(student_id, path)
 
-    student_id = 'aba64fa34e052d9f2c5473f26136afa4c053f049191f40ea7e0d56708274d9a8'
-    one_student_path = students_paths[student_id]
-    one_student_graph = student_graphs[student_id]
-    print_edges_for_student(one_student_graph, student_id)
+    # student_id = 'aba64fa34e052d9f2c5473f26136afa4c053f049191f40ea7e0d56708274d9a8'
+    # one_student_path = students_paths[student_id]
+    # one_student_graph = student_graphs[student_id]
+    # print_edges_for_student(one_student_graph, student_id)
 
-    # Plot one student's submission path
-    plot_one_student_graph(student_id, one_student_graph)
+    # # Plot one student's submission path
+    # plot_one_student_graph(student_id, one_student_graph)
+
+    plot_all_students_graph(G, title="Submission Paths for All Students")
