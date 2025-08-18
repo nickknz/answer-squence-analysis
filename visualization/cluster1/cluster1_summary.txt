@@ -1,0 +1,20 @@
+Cluster 1 Summary
+==================================================
+
+Number of students: 4
+Average path length: 28.00
+Path length range: 14 - 43
+
+Most common starting questions:
+  1. q1_p1_s1_t2: 3 times (75.0%)
+  2. q2_p5_s1_t2: 1 times (25.0%)
+
+Most common ending questions:
+  1. q2_p5_s1_t2: 3 times (75.0%)
+  2. q1_p5_s1_t4: 1 times (25.0%)
+
+Student ID list:
+   1. 2d48a11e9c6acdb1... (path length: 15)
+   2. 6998d91c435c8784... (path length: 43)
+   3. 7e8366b60f9dbcbd... (path length: 40)
+   4. 96dc8b59647c1db4... (path length: 14)

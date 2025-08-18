@@ -3,11 +3,12 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import plotly.express as px
 import pandas as pd
-import answer_sequence_vis as vis_tools
+import src.utils.answer_sequence_vis as vis_tools
 
 def plot_multiple_students_submission_sequence_plotly(
     multiple_students_df: pd.DataFrame,
     sorted_task_ids: list,
+    title: str = "Multiple Students' Submission Sequence",
     include_plotlyjs: str = 'cdn'
 ) -> str:
     """
@@ -54,7 +55,7 @@ def plot_multiple_students_submission_sequence_plotly(
         ))
     
     fig.update_layout(
-        title='Submissions Over Time for Multiple Students',
+        title=title,
         xaxis=dict(
             title='Time',
             tickformat='%H:%M',
@@ -216,6 +217,7 @@ if __name__ == "__main__":
     stu2_df = vis_tools.get_one_student_submissions(all_submissions_df, "aba64fa34e052d9f2c5473f26136afa4c053f049191f40ea7e0d56708274d9a8")
     stu3_df = vis_tools.get_one_student_submissions(all_submissions_df, "6444fad4ad42f277da7e8c45468d271d12426bbbbf8ff9fa9c28abf16d2cef19")
 
+    print(stu1_df.head())
     # print(count_submissions_in_window(
     #     stu1_df,
     #     pd.Timestamp("2022-05-03 09:03:19+00:00"),

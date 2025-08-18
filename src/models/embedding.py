@@ -20,6 +20,8 @@ def embed_graph(graph, dimensions=128, walk_length=30, num_walks=200, workers=4)
     node2vec = Node2Vec(
         graph,
         dimensions=dimensions,
+        p=0.25,
+        q=4.0,
         walk_length=walk_length,
         num_walks=num_walks,
         workers=workers
