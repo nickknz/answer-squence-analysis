@@ -36,11 +36,6 @@ class SubmissionLSTM(nn.Module):
             batch_first=True,
             dropout=dropout if num_layers > 1 else 0
         )
-
-        # Self-attention to focus on important parts
-        self.attention = nn.MultiheadAttention(
-            hidden_dim, num_heads=8, batch_first=True, dropout=0.1
-        )
     
         self.decoder = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim),

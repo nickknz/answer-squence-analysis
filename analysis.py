@@ -73,7 +73,7 @@ def calculate_time_spent_each_task_each_student(all_submissions_df: pd.DataFrame
     The DataFrame should have 'student_id', 'task_id', and 'timestamp' columns 
     and they are ordered by 'student_id' and 'timestamp'.
 
-    The output DataFrame will have 'student', 'task_id', and 'duration' columns.
+    The output DataFrame will have 'student_id', 'task_id', and 'duration' columns.
     """
     
     df = all_submissions_df.sort_values(by=['student_id', 'timestamp']).reset_index(drop=True)
@@ -81,24 +81,59 @@ def calculate_time_spent_each_task_each_student(all_submissions_df: pd.DataFrame
     df['prev_submission_time'] = df.groupby('student_id')['timestamp'].shift(1)
 
     # Just an example for filling NaN values in 'prev_submission_time'
-    exam_start_time = pd.to_datetime("2025-05-08 20:00:00+00:00")
+    exam_start_time = pd.to_datetime("2022-05-03 09:00:00+00:00")
     df['prev_submission_time'] = df['prev_submission_time'].fillna(exam_start_time)
 
     # Calculate duration in seconds
-    df['time_spent_seconds'] = (df['timestamp'] - df['prev_submission_time']).dt.total_seconds()
-    
-    return df[['student_id', 'timestamp', 'prev_submission_time', 'task_id', 'time_spent_seconds']]
+    df['time_spent_sec'] = (df['timestamp'] - df['prev_submission_time']).dt.total_seconds()
 
+    # print(df[['student_id', 'timestamp', 'prev_submission_time', 'task_id', 'time_spent_sec']])
+
+    res_df = df.groupby(['student_id', 'task_id'], as_index=False)['time_spent_sec'].sum()
+    
+    return res_df
+
+def calculate_average_time_spent_per_task(student_task_duration_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculate the average time spent on each task across all students.
+    The DataFrame should have 'student_id', 'task_id', and 'duration' columns 
+
+    The output DataFrame will have 'task_id' and 'average_time_spent_sec' columns.
+    """
+
+    average_time_spent = student_task_duration_df.groupby('task_id')['time_spent_sec'].mean().reset_index(name='average_time_spent_sec')
+    
+    return average_time_spent
+
+# def calculate_total_time_spent_per_student(all_submissions_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculate the total time spent by each student.
+    The DataFrame should have 'student_id', 'task_id', and 'duration' columns 
+
+    The output DataFrame will have 'student_id' and 'total_time_spent_sec' columns.
+    """
+    
+    student_task_duration_df = calculate_time_spent_each_task_each_student(all_submissions_df)
+    total_time_spent = student_task_duration_df.groupby('student_id')['time_spent_sec'].sum().reset_index(name='total_time_spent_sec')
+    
+    return total_time_spent
 
 if __name__ == "__main__":
     pd.set_option('display.max_columns', None)
-    print("Data analysis complete. Processed data:")
-    all_submissions_df = create_all_submissions_df_from_JSON("example-student-sequence.json")
+
+    all_submissions_df = create_all_submissions_df_from_JSON("example-student-sequence-v2.json")
     student_task_duration_df = calculate_time_spent_each_task_each_student(all_submissions_df)
+
+    print(f"Total unique students: {student_task_duration_df['student_id'].nunique()}")
+
+    print(f"Total submissions processed: {len(all_submissions_df)}")
+    print("Duration statistics:")
     print(student_task_duration_df)
-    # print(f"Total unique students: {df_clean['student'].nunique()}")
-    # print(f"Total unique tasks: {df_clean['task_id'].nunique()}")
-    # print(f"Total submissions processed: {len(df_clean)}")
-    # print("Duration statistics:")
-    # print(df_clean['duration'].describe())
+
+    task_average_time_spent = calculate_average_time_spent_per_task(student_task_duration_df)
+    print("Average time spent per task:")
+    print(task_average_time_spent)
+
+
+
     print("Analysis complete.")

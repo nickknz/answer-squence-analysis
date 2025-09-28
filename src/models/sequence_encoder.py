@@ -120,8 +120,8 @@ def prepare_sequence_data(student_submission_sequences, embeddings):
     
     return padded_sequences, lengths, student_ids
 
-def train_sequence_autoencoder(student_submission_sequences, embeddings, hidden_dim=8,
-                               num_layers=2, batch_size=32, num_epochs=20, learning_rate=0.001):
+def train_sequence_autoencoder(student_submission_sequences, embeddings, hidden_dim=512,
+                               num_layers=2, batch_size=32, num_epochs=10, learning_rate=0.001):
     """
     Train sequence autoencoder on student submission sequences
     
